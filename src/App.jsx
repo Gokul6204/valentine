@@ -350,7 +350,7 @@ function Home({ onYes }) {
         </h2>
 
         <p className="home-text">
-          There is only one correct answer. Choose wisely. 💗
+          There is only one answer. Choose wisely. 💗
         </p>
 
         {noClickCount >= 3 && (
@@ -431,7 +431,7 @@ function Letter() {
   };
 
   const handleCall = () => {
-    window.location.href = "tel:+919344721150";
+    window.location.href = "tel:+919003304839";
   };
 
   return (
