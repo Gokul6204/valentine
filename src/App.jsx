@@ -39,10 +39,12 @@ function FloatingHeartSymbols({ count = 8 }) {
 }
 
 function calculateLove(username, password) {
+  const normalizedU = username.trim().toLowerCase();
+  const normalizedP = password.trim();
   const totalNeeded = CORRECT_USERNAME.length + CORRECT_PASSWORD.length;
   const current =
-    Math.min(username.length, CORRECT_USERNAME.length) +
-    Math.min(password.length, CORRECT_PASSWORD.length);
+    Math.min(normalizedU.length, CORRECT_USERNAME.length) +
+    Math.min(normalizedP.length, CORRECT_PASSWORD.length);
   const pct = Math.min(100, Math.round((current / totalNeeded) * 100));
   return pct;
 }
@@ -62,7 +64,10 @@ function Login({ onSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username === CORRECT_USERNAME && password === CORRECT_PASSWORD) {
+    const normalizedUsername = username.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    if (normalizedUsername === CORRECT_USERNAME && normalizedPassword === CORRECT_PASSWORD) {
       // Show door opening animation
       setShowDoorAnimation(true);
       setTimeout(() => {
