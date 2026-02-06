@@ -146,7 +146,7 @@ function Login({ onSuccess }) {
             Unlock my heart
           </button>
         </form>
-        
+
         {showDoorAnimation && (
           <div className="door-animation-overlay">
             <div className={`door-container ${doorOpen ? "open" : ""}`}>
@@ -157,7 +157,7 @@ function Login({ onSuccess }) {
             </div>
           </div>
         )}
-        
+
         {butterflies.map((butterfly) => (
           <div
             key={butterfly.id}
@@ -178,9 +178,11 @@ function Login({ onSuccess }) {
 function Home({ onYes }) {
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
   const [butterflies, setButterflies] = useState([]);
+  const [noClickCount, setNoClickCount] = useState(0);
   const containerRef = useRef(null);
   const buttonRef = useRef(null);
   const noAreaRef = useRef(null);
+  const wrapperRef = useRef(null);
 
   // Proximity-based roaming - only move when cursor/touch is close
   useEffect(() => {
@@ -194,7 +196,7 @@ function Home({ onYes }) {
       // Get container bounds
       const containerRect = container.getBoundingClientRect();
       const noAreaRect = noArea.getBoundingClientRect();
-      
+
       // Current button center position (absolute)
       const buttonCenterX = noAreaRect.left + noAreaRect.width / 2 + noPos.x;
       const buttonCenterY = noAreaRect.top + noAreaRect.height / 2 + noPos.y;
@@ -211,7 +213,7 @@ function Home({ onYes }) {
       );
 
       // Proximity threshold - move when cursor is within 120px (mobile) or 100px (desktop)
-      const isMobile = window.innerWidth <= 768;
+      const isMobile = window.innerWidth <= 780;
       const proximityThreshold = isMobile ? 120 : 100;
 
       if (distance < proximityThreshold) {
@@ -221,33 +223,33 @@ function Home({ onYes }) {
           buttonCenterX - cursorX
         ) + (Math.random() - 0.5) * 0.5; // Add some randomness
 
-        // Calculate new position - constrain within container
-        const containerPadding = 20;
-        const buttonRadius = 30; // Half button width/height
-        const maxX = (containerRect.width / 2) - containerPadding - buttonRadius;
-        const maxY = (containerRect.height / 2) - containerPadding - buttonRadius;
-        
-        // Calculate max radius from noArea center
-        const noAreaCenterX = noAreaRect.left + noAreaRect.width / 2 - containerRect.left;
-        const noAreaCenterY = noAreaRect.top + noAreaRect.height / 2 - containerRect.top;
-        
-        const maxRadiusX = Math.min(maxX, containerRect.width / 2 - noAreaCenterX - buttonRadius);
-        const maxRadiusY = Math.min(maxY, containerRect.height / 2 - noAreaCenterY - buttonRadius);
-        const maxRadius = Math.min(maxRadiusX, maxRadiusY, isMobile ? 100 : 80);
-        
-        const radius = maxRadius * (0.6 + Math.random() * 0.4);
-        
-        let newX = Math.cos(angle) * radius;
-        let newY = Math.sin(angle) * radius;
+        // Calculate workspace boundaries (within the main card container)
+        const container = containerRef.current;
+        const containerRect = container.getBoundingClientRect();
+        const padding = 20;
+        const btnRadius = 30;
 
-        // Constrain to container bounds
-        const minX = -(containerRect.width / 2 - noAreaCenterX - buttonRadius);
-        const minY = -(containerRect.height / 2 - noAreaCenterY - buttonRadius);
+        // Calculate center of noArea relative to container
+        const anchorX = noAreaRect.left - containerRect.left + noAreaRect.width / 2;
+        const anchorY = noAreaRect.top - containerRect.top + noAreaRect.height / 2;
 
-        newX = Math.max(minX, Math.min(maxRadius, newX));
-        newY = Math.max(minY, Math.min(maxRadius, newY));
+        // Compute possible range for noPos relative to anchor
+        const minX = padding + btnRadius - anchorX;
+        const maxX = containerRect.width - padding - btnRadius - anchorX;
+        const minY = padding + btnRadius - anchorY;
+        const maxY = containerRect.height - padding - btnRadius - anchorY;
 
-        setNoPos({ x: newX, y: newY });
+        // Distance to move - bigger jumps when in a bigger container
+        const moveDist = isMobile ? 90 : 70;
+
+        let targetX = noPos.x + Math.cos(angle) * moveDist;
+        let targetY = noPos.y + Math.sin(angle) * moveDist;
+
+        // Clamp to allowed range within the card
+        const finalX = Math.max(minX, Math.min(maxX, targetX));
+        const finalY = Math.max(minY, Math.min(maxY, targetY));
+
+        setNoPos({ x: finalX, y: finalY });
 
         // Add butterfly animation when button moves
         const newButterfly = {
@@ -275,39 +277,28 @@ function Home({ onYes }) {
   const handleButtonClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    // Move button away on click attempt
+
+    setNoClickCount(prev => prev + 1);
+
+    // Move button away on click attempt (teleport within card)
     if (!containerRef.current || !noAreaRef.current) return;
-    
+
     const container = containerRef.current;
-    const noArea = noAreaRef.current;
     const containerRect = container.getBoundingClientRect();
-    const noAreaRect = noArea.getBoundingClientRect();
-    
-    const angle = Math.random() * Math.PI * 2;
-    const isMobile = window.innerWidth <= 768;
-    const containerPadding = 20;
-    const buttonRadius = 30;
-    
-    const noAreaCenterX = noAreaRect.left + noAreaRect.width / 2 - containerRect.left;
-    const noAreaCenterY = noAreaRect.top + noAreaRect.height / 2 - containerRect.top;
-    
-    const maxX = (containerRect.width / 2) - containerPadding - buttonRadius;
-    const maxY = (containerRect.height / 2) - containerPadding - buttonRadius;
-    const maxRadiusX = Math.min(maxX, containerRect.width / 2 - noAreaCenterX - buttonRadius);
-    const maxRadiusY = Math.min(maxY, containerRect.height / 2 - noAreaCenterY - buttonRadius);
-    const maxRadius = Math.min(maxRadiusX, maxRadiusY, isMobile ? 100 : 80);
-    
-    const radius = maxRadius * (0.6 + Math.random() * 0.4);
-    
-    let newX = Math.cos(angle) * radius;
-    let newY = Math.sin(angle) * radius;
+    const padding = 20;
+    const btnRadius = 30;
 
-    const minX = -(containerRect.width / 2 - noAreaCenterX - buttonRadius);
-    const minY = -(containerRect.height / 2 - noAreaCenterY - buttonRadius);
+    const anchorX = noAreaRef.left - containerRect.left + noAreaRect.width / 2;
+    const anchorY = noAreaRef.top - containerRect.top + noAreaRect.height / 2;
 
-    newX = Math.max(minX, Math.min(maxRadius, newX));
-    newY = Math.max(minY, Math.min(maxRadius, newY));
+    const minX = padding + btnRadius - anchorX;
+    const maxX = containerRect.width - padding - btnRadius - anchorX;
+    const minY = padding + btnRadius - anchorY;
+    const maxY = containerRect.height - padding - btnRadius - anchorY;
+
+    // Pick a random spot anywhere inside the home card
+    const newX = minX + Math.random() * (maxX - minX);
+    const newY = minY + Math.random() * (maxY - minY);
 
     setNoPos({ x: newX, y: newY });
   };
@@ -350,7 +341,13 @@ function Home({ onYes }) {
           There is only one correct answer. Choose wisely. 💗
         </p>
 
-        <div className="home-buttons-wrapper">
+        {noClickCount >= 3 && (
+          <p className="no-message">
+            Romba try panatha click Yes
+          </p>
+        )}
+
+        <div className="home-buttons-wrapper" ref={wrapperRef}>
           <button className="btn-primary big" onClick={handleYesClick}>
             Yes
           </button>
@@ -368,7 +365,7 @@ function Home({ onYes }) {
               No
             </button>
           </div>
-          
+
           {butterflies.map((butterfly) => (
             <div
               key={butterfly.id}
@@ -389,6 +386,7 @@ function Home({ onYes }) {
 
 function Letter() {
   const [opened, setOpened] = useState(false);
+  const [isUnfolding, setIsUnfolding] = useState(false);
   const [ribbonCut, setRibbonCut] = useState(false);
   const [showScissors, setShowScissors] = useState(false);
   const [letterRead, setLetterRead] = useState(false);
@@ -399,9 +397,15 @@ function Letter() {
     setTimeout(() => {
       setRibbonCut(true);
       setShowScissors(false);
-      setTimeout(() => setOpened(true), 1200);
+      setTimeout(() => {
+        setIsUnfolding(true);
+        setTimeout(() => {
+          setOpened(true);
+          setIsUnfolding(false);
+        }, 1200);
+      }, 800);
     }, 800);
-    
+
     // Add butterfly animation
     const newButterfly = {
       id: Date.now() + Math.random(),
@@ -447,7 +451,7 @@ function Letter() {
             <div className="envelope-back" />
             <div className="envelope-front" />
             <div className="envelope-flap" />
-            <div className={`letter-sheet ${opened ? "show" : ""}`}>
+            <div className={`letter-sheet ${opened ? "show" : ""} ${isUnfolding ? "unfolding" : ""}`}>
               <div className="letter-content">
                 <h3>To my dearest Rekha,</h3>
                 <p>
@@ -469,16 +473,16 @@ function Letter() {
                 <p className="signature">With all my love,</p>
                 <p className="signature">Your Valentine Prem ❤️</p>
               </div>
-              
+
               {opened && !letterRead && (
                 <button
                   className="btn-read-more"
                   onClick={() => setLetterRead(true)}
                 >
-                  Continue reading...
+                  Click me
                 </button>
               )}
-              
+
               {letterRead && (
                 <div className="date-section">
                   <p className="date-text">Come let&apos;s date 💕</p>
@@ -490,7 +494,7 @@ function Letter() {
             </div>
           </div>
         </div>
-        
+
         {butterflies.map((butterfly) => (
           <div
             key={butterfly.id}
