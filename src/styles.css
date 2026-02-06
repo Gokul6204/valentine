@@ -465,6 +465,41 @@ body {
   background: rgba(5, 0, 10, 0.9);
 }
 
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 46px;
+  /* Space for the eye icon */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 18px;
+  transition: color 0.2s ease, transform 0.2s ease;
+  z-index: 5;
+}
+
+.password-toggle:hover {
+  color: var(--accent);
+}
+
+.password-toggle.active {
+  color: var(--accent);
+}
+
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
 .login-form {
   margin-top: 26px;
   display: flex;
@@ -703,6 +738,74 @@ body {
 
 .ribbon.cut {
   animation: ribbonCut 1s ease forwards;
+}
+
+.ribbon-tie-v,
+.ribbon-tie-h {
+  position: absolute;
+  background: linear-gradient(to bottom, #ff4b9a, #ff2d7a);
+  z-index: 20;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.ribbon-tie-v {
+  top: 18px;
+  bottom: 16px;
+  left: 50%;
+  width: 32px;
+  transform: translateX(-50%);
+}
+
+.ribbon-tie-h {
+  left: 18px;
+  right: 18px;
+  top: 50%;
+  height: 32px;
+  transform: translateY(-50%);
+}
+
+.ribbon-tie-v.cut {
+  animation: ribbonFlyV 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.ribbon-tie-h.cut {
+  animation: ribbonFlyH 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes ribbonFlyV {
+  0% {
+    transform: translateX(-50%) scaleY(1);
+    opacity: 1;
+  }
+
+  40% {
+    transform: translateX(-50%) scaleY(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(-50%) translateY(-100px) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes ribbonFlyH {
+  0% {
+    transform: translateY(-50%) scaleX(1);
+    opacity: 1;
+  }
+
+  40% {
+    transform: translateY(-50%) scaleX(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-50%) translateX(100px) scale(0);
+    opacity: 0;
+  }
 }
 
 .envelope {

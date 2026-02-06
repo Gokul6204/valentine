@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
+import { FaEye } from "react-icons/fa";
 
-const CORRECT_USERNAME = "i will be your valentine";
-const CORRECT_PASSWORD = "22_02_2026";
+const CORRECT_USERNAME = "I will be your valentine";
+const CORRECT_PASSWORD = "22022026";
 
 const HEART_SYMBOLS = ["❤️", "💕", "💖", "💗", "💓", "💝", "💞", "💟"];
 
@@ -56,7 +57,7 @@ function Login({ onSuccess }) {
   const [butterflies, setButterflies] = useState([]);
   const [showDoorAnimation, setShowDoorAnimation] = useState(false);
   const [doorOpen, setDoorOpen] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
   const love = useMemo(
     () => calculateLove(username, password),
     [username, password]
@@ -67,7 +68,7 @@ function Login({ onSuccess }) {
     const normalizedUsername = username.trim().toLowerCase();
     const normalizedPassword = password.trim();
 
-    if (normalizedUsername === CORRECT_USERNAME && normalizedPassword === CORRECT_PASSWORD) {
+    if (normalizedUsername === CORRECT_USERNAME.toLowerCase() && normalizedPassword === CORRECT_PASSWORD) {
       // Show door opening animation
       setShowDoorAnimation(true);
       setTimeout(() => {
@@ -132,19 +133,25 @@ function Login({ onSuccess }) {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder='i will be your valentine'
+              placeholder='I will be your valentine'
               autoComplete="off"
             />
           </label>
-          <label className="field-label">
+          <label className="field-label password-field">
             Password
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="22_02_2026"
-              autoComplete="off"
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Our Wedding Date"
+                autoComplete="off"
+              />
+              <FaEye
+                className={`password-toggle ${showPassword ? "active" : ""}`}
+                onClick={() => setShowPassword(!showPassword)}
+              />
+            </div>
           </label>
 
           <button type="submit" className="btn-primary">
@@ -453,6 +460,12 @@ function Letter() {
           )}
 
           <div className={`envelope ${opened ? "open" : ""}`}>
+            {!opened && (
+              <>
+                <div className={`ribbon-tie-v ${ribbonCut ? "cut" : ""}`} />
+                <div className={`ribbon-tie-h ${ribbonCut ? "cut" : ""}`} />
+              </>
+            )}
             <div className="envelope-back" />
             <div className="envelope-front" />
             <div className="envelope-flap" />
